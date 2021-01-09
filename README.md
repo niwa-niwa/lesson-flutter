@@ -1,6 +1,6 @@
 # Lesson Flutter
 
-This Repository is for testing and studying Python.
+This Repository is for testing and studying Flutter.
 
 createing a branch by topics.
 
