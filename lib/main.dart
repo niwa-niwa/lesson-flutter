@@ -95,6 +95,33 @@ class MyButton extends StatelessWidget{
 }
 
 
+class CounterDisplay extends StatelessWidget{
+  CounterDisplay({this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context){
+    return Text('Count: $count');
+  }
+}
+
+
+class CounterIncrementor extends StatelessWidget{
+  CounterIncrementor({this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context){
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: Text('Increment withou state'),
+    );
+  }
+}
+
+
 class Counter extends StatefulWidget{
   @override
   _CounterState createState() => _CounterState();
@@ -106,7 +133,7 @@ class _CounterState extends State<Counter>{
 
   void _increment(){
     setState((){
-      _counter++;
+      ++_counter;
     });
   }
 
@@ -114,11 +141,8 @@ class _CounterState extends State<Counter>{
   Widget build(BuildContext context){
     return Row(
       children: <Widget>[
-        ElevatedButton(
-          onPressed: _increment,
-          child: Text('Increment'),
-        ),
-        Text('Count: $_counter'),
+        CounterIncrementor(onPressed: _increment),
+        CounterDisplay(count: _counter),
       ],
     );
   }
