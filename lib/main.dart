@@ -9,6 +9,7 @@ void main() {
   ));
 }
 
+
 class MyScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context){
@@ -26,13 +27,14 @@ class MyScaffold extends StatelessWidget {
               child: Text('HelloHello, world'),
             ),
           ),
-          MyButton()
+          Counter(),
+          MyButton(),
+
         ],
       ),
     );
   }
 }
-
 
 
 class MyAppBar extends StatelessWidget{
@@ -93,3 +95,31 @@ class MyButton extends StatelessWidget{
 }
 
 
+class Counter extends StatefulWidget{
+  @override
+  _CounterState createState() => _CounterState();
+}
+
+
+class _CounterState extends State<Counter>{
+  int _counter = 0;
+
+  void _increment(){
+    setState((){
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return Row(
+      children: <Widget>[
+        ElevatedButton(
+          onPressed: _increment,
+          child: Text('Increment'),
+        ),
+        Text('Count: $_counter'),
+      ],
+    );
+  }
+}
