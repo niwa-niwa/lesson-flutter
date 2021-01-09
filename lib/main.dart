@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
 class _RandomWordsState extends State<RandomWords> {
 
   final _suggestions = <WordPair>[];
+  final _saved = Set<WordPair>();
   final _biggerFont = TextStyle(fontSize: 18.0);
 
 
@@ -47,10 +48,68 @@ class _RandomWordsState extends State<RandomWords> {
 
   // create a list row
   Widget _buildRow(WordPair pair){
+
+    final alreadySaved = _saved.contains(pair);
+
     return ListTile(
       title: Text(
         pair.asPascalCase,
         style: _biggerFont,
+      ),
+      trailing:Icon(
+        alreadySaved ? Icons.favorite: Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+
+      // the action is when a list row is tapped 
+      onTap: () {
+        setState((){
+          if(alreadySaved){
+            _saved.remove(pair);
+          }else{
+            _saved.add(pair);
+          }
+        });
+      },
+    );
+  }
+
+
+  void _pushSaved(){
+    Navigator.of(context).push(
+
+      // made another page
+      MaterialPageRoute<void>(
+
+        // build a page
+        builder:  (BuildContext context){
+
+          // mapping the _saved of variable
+          final tiles = _saved.map(
+            (WordPair pair){
+              return ListTile(
+                title: Text(
+                  pair.asPascalCase,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+
+          // made list row from the tiles that was mapped
+          final divided = ListTile.divideTiles(
+            context: context,
+            tiles: tiles,
+          ).toList();
+
+          // display elements on the page
+          return Scaffold(
+            appBar:  AppBar(
+              title: Text('Saved Suggestions'),
+            ),
+            body: ListView(children: divided),
+          );
+        },
       ),
     );
   }
@@ -61,6 +120,11 @@ class _RandomWordsState extends State<RandomWords> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Startup Name Generator'),
+
+        // the action makes executed by tap of Hamburg menu
+        actions: [
+          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
+        ],
       ),
       body: _buildSuggestions(),
     );
