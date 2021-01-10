@@ -71,7 +71,7 @@ class _TodoListPageState extends State<TodoListPage>{
       // made a float button
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // move to TodoAddPage and waiting a variable new task
+          // .push move to TodoAddPage and waiting a variable new task
           final newListText = await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) {
               return TodoAddPage();
@@ -119,8 +119,11 @@ class _TodoAddPageState extends State<TodoAddPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // display input value in realtime
             Text(_text, style: TextStyle(color: Colors.blue)),
+            // textfield for adding todo
             TextField(
+              // set a value that was made type to valiable of state 
               onChanged: (String value){
                 setState((){
                   _text = value;
@@ -132,6 +135,7 @@ class _TodoAddPageState extends State<TodoAddPage> {
               child: RaisedButton(
                 color: Colors.blue,
                 onPressed: (){
+                  // the argument of .pop is return next page
                   Navigator.of(context).pop(_text);
                 },
                 child: Text('Add list', style:TextStyle(color: Colors.white)),
@@ -141,6 +145,7 @@ class _TodoAddPageState extends State<TodoAddPage> {
               width: double.infinity,
               child: FlatButton(
                 onPressed: (){
+                  // .pop back to previus page
                   Navigator.of(context).pop();
                 },
                 child: Text('Cancel')
