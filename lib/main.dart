@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 void main() {
   runApp(MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -151,6 +154,7 @@ class ChatPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+
       appBar: AppBar(
         title: Text('Chat'),
         actions: <Widget>[
@@ -170,8 +174,40 @@ class ChatPage extends StatelessWidget{
         ],
       ),
       
-      body: Center(
-        child: Text('Information:${user.email}'),
+      body: Column(
+        children:<Widget>[
+          Container(
+            padding: EdgeInsets.all(8),
+            child: Text('Login information:${user.email}'),
+          ),
+          
+          Expanded(
+            child: FutureBuilder<QuerySnapshot>(
+              future: Firestore.instance
+                .collection('posts')
+                .orderBy('date')
+                .getDocuments(),
+              builder: (context, snapshot){
+                if(snapshot.hasData){
+                  final List<DocumentSnapshot> documents = snapshot.data.documents;
+                  return ListView(
+                    children: documents.map((document){
+                      return Card(
+                        child: ListTile(
+                          title: Text(document['text']),
+                          subtitle: Text(document['email']),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+                return Center(
+                  child: Text('Loading...'),
+                );
+              },
+            ),
+          ),
+        ],
       ),
 
       floatingActionButton: FloatingActionButton(
@@ -179,7 +215,7 @@ class ChatPage extends StatelessWidget{
         onPressed: () async {
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context){
-              return AddPostPage();
+              return AddPostPage(user);
             }),
           );
         },
@@ -189,19 +225,67 @@ class ChatPage extends StatelessWidget{
 }
 
 
-class AddPostPage extends StatelessWidget {
+class AddPostPage extends StatefulWidget {
+
+  AddPostPage(this.user);
+
+  final FirebaseUser user;
+
+  @override
+  _AddPostPageState createState() => _AddPostPageState();
+}
+
+class _AddPostPageState extends State<AddPostPage>{
+
+  String messageText = '';
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
+
       appBar: AppBar(
         title: Text('Post a message'),
       ),
+
       body: Center(
-        child: RaisedButton(
-          child: Text('Back'),
-          onPressed: (){
-            Navigator.of(context).pop();
-          },
+        child: Container(
+          padding: EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:<Widget>[
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Send Message'),
+                keyboardType: TextInputType.multiline,
+                maxLines: 3,
+                onChanged: (String value){
+                  setState((){
+                    messageText = value;
+                  });
+                },
+              ),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  color: Colors.blue,
+                  textColor: Colors.white,
+                  child: Text('Post'),
+                  onPressed: () async {
+                    final date = DateTime.now().toLocal().toIso8601String();
+                    final email = widget.user.email;
+                    await Firestore.instance
+                      .collection('posts')
+                      .document()
+                      .setData({
+                        'text': messageText,
+                        'email': email,
+                        'date': date,
+                      });
+                      Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
