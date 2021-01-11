@@ -180,30 +180,53 @@ class ChatPage extends StatelessWidget{
             padding: EdgeInsets.all(8),
             child: Text('Login information:${user.email}'),
           ),
-          
+
           Expanded(
+            // FutureBuilder : it is able to impliment async method
             child: FutureBuilder<QuerySnapshot>(
+              // get messages and stored snapshot.data.documents
+              // with async
               future: Firestore.instance
                 .collection('posts')
                 .orderBy('date')
                 .getDocuments(),
+
+              // put messages to documents.map and then create a list-row
               builder: (context, snapshot){
                 if(snapshot.hasData){
                   final List<DocumentSnapshot> documents = snapshot.data.documents;
+
                   return ListView(
                     children: documents.map((document){
+                      IconButton deleteIcon;
+
+                      // if a message that user made display delete button and able to delete
+                      if (document['email']== user.email){
+                        deleteIcon = IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () async {
+                            await Firestore.instance
+                              .collection('posts')
+                              .document(document.documentID)
+                              .delete();
+                          },
+                        );
+                      }
+                      
                       return Card(
                         child: ListTile(
                           title: Text(document['text']),
                           subtitle: Text(document['email']),
+                          trailing: deleteIcon,
                         ),
                       );
                     }).toList(),
                   );
+                }else{
+                  return Center(
+                    child: Text('Loading...'),
+                  );
                 }
-                return Center(
-                  child: Text('Loading...'),
-                );
               },
             ),
           ),
