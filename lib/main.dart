@@ -183,13 +183,21 @@ class ChatPage extends StatelessWidget{
 
           Expanded(
             // FutureBuilder : it is able to impliment async method
-            child: FutureBuilder<QuerySnapshot>(
-              // get messages and stored snapshot.data.documents
-              // with async
-              future: Firestore.instance
+            child: StreamBuilder<QuerySnapshot>(
+              /* get messages and stored snapshot.data.documents with async
+              
+              * Realtime update when message state change
+              * StreamBuilder is able to reload in realtime
+
+              * FutureBuilder is not do it just one time reload when the page is displayed
+
+              * https://www.flutter-study.dev/firebase-app/firestore-stream
+              */
+
+              stream: Firestore.instance
                 .collection('posts')
                 .orderBy('date')
-                .getDocuments(),
+                .snapshots(),
 
               // put messages to documents.map and then create a list-row
               builder: (context, snapshot){
