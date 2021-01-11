@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 
 void main() {
@@ -8,17 +9,33 @@ void main() {
 }
 
 
+class UserState extends ChangeNotifier{
+  FirebaseUser user;
+
+  void setUser(FirebaseUser newUser){
+    user = newUser;
+    notifyListeners();
+  }
+}
+
+
 class MyApp extends StatelessWidget {
+
+  final UserState userState = UserState();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter-Chat',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return ChangeNotifierProvider<UserState>.value(
+      value: userState,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter-Chat',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: LoginPage(),
       ),
-      home: LoginPage(),
     );
   }
 }
@@ -37,6 +54,9 @@ class _LoginPageState extends State<LoginPage>{
 
   @override
   Widget build(BuildContext context){
+
+    final UserState userState = Provider.of<UserState>(context);
+
     return Scaffold(
 
       appBar: 
@@ -90,6 +110,9 @@ class _LoginPageState extends State<LoginPage>{
                           // get  authed user from result 
                           final FirebaseUser user = result.user;
 
+                          // set to UserState provider
+                          userState.setUser(user);
+
                           // move to chat page with the user
                           await Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
                             return ChatPage(user);
@@ -120,11 +143,16 @@ class _LoginPageState extends State<LoginPage>{
                             );
 
                             final FirebaseUser user = result.user;
+
+                            // set to UserState provider
+                            userState.setUser(user);
+
                             await Navigator.of(context).pushReplacement(
                               MaterialPageRoute(builder: (context){
                                 return ChatPage(user);
                               }),
                             );
+
                           }catch (e) {
                             setState((){
                               infoText = "Failed login : ${e.message}";
@@ -153,6 +181,11 @@ class ChatPage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+
+    // get user data from UserState of Provider
+    final UserState userState = Provider.of<UserState>(context);
+    final FirebaseUser user = userState.user;
+
     return Scaffold(
 
       appBar: AppBar(
@@ -246,7 +279,7 @@ class ChatPage extends StatelessWidget{
         onPressed: () async {
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context){
-              return AddPostPage(user);
+              return AddPostPage();
             }),
           );
         },
@@ -258,10 +291,6 @@ class ChatPage extends StatelessWidget{
 
 class AddPostPage extends StatefulWidget {
 
-  AddPostPage(this.user);
-
-  final FirebaseUser user;
-
   @override
   _AddPostPageState createState() => _AddPostPageState();
 }
@@ -272,6 +301,11 @@ class _AddPostPageState extends State<AddPostPage>{
 
   @override
   Widget build(BuildContext context){
+    
+    // get user data from UserState of Provider
+    final UserState userState = Provider.of<UserState>(context);
+    final FirebaseUser user = userState.user;
+
     return Scaffold(
 
       appBar: AppBar(
@@ -302,7 +336,7 @@ class _AddPostPageState extends State<AddPostPage>{
                   child: Text('Post'),
                   onPressed: () async {
                     final date = DateTime.now().toLocal().toIso8601String();
-                    final email = widget.user.email;
+                    final email = user.email;
                     await Firestore.instance
                       .collection('posts')
                       .document()
